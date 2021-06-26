@@ -12,15 +12,8 @@ const pool = new Pool({
 });
 
 app.get("/hotels", function (req, res) {
-  const hotelNameQuery = req.query.name;
-  let query = `SELECT * FROM hotels ORDER BY name`;
-  console.log(req.query)
-  if (hotelNameQuery) {
-    query = `SELECT * FROM hotels WHERE name LIKE '%${hotelNameQuery}%' ORDER BY name`;
-  }
-
   pool
-    .query(query)
+    .query("SELECT * FROM hotels")
     .then((result) => res.json(result.rows))
     .catch((e) => console.error(e));
 });
@@ -31,6 +24,26 @@ app.get("/hotels/:hotelId", function (req, res) {
   pool
     .query("SELECT * FROM hotels WHERE id=$1", [hotelId])
     .then((result) => res.json(result.rows))
+    .catch((e) => console.error(e));
+});
+
+app.post("/hotels", function (req, res) {
+  const newHotelName = req.body.name;
+  const newHotelRooms = req.body.rooms;
+  const newHotelPostcode = req.body.postcode;
+
+  if (!Number.isInteger(newHotelRooms) || newHotelRooms <= 0) {
+    return res
+      .status(400)
+      .send("The number of rooms should be a positive integer.");
+  }
+
+  const query =
+    "INSERT INTO hotels (name, rooms, postcode) VALUES ($1, $2, $3)";
+
+  pool
+    .query(query, [newHotelName, newHotelRooms, newHotelPostcode])
+    .then(() => res.send("Hotel created!"))
     .catch((e) => console.error(e));
 });
 
