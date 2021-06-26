@@ -13,7 +13,7 @@ const pool = new Pool({
 
 app.get("/hotels", function (req, res) {
   pool
-    .query(query)
+    .query("SELECT * FROM hotels")
     .then((result) => res.json(result.rows))
     .catch((e) => console.error(e));
 });
@@ -54,6 +54,20 @@ app.put("/customers/:customerId", function (req, res) {
   pool
     .query("UPDATE customers SET email=$1 WHERE id=$2", [newEmail, customerId])
     .then(() => res.send(`Customer ${customerId} updated!`))
+    .catch((e) => console.error(e));
+});
+
+app.delete("/customers/:customerId", function (req, res) {
+  const customerId = req.params.customerId;
+
+  pool
+    .query("DELETE FROM bookings WHERE customer_id=$1", [customerId])
+    .then(() => {
+      pool
+        .query("DELETE FROM customers WHERE id=$1", [customerId])
+        .then(() => res.send(`Customer ${customerId} deleted!`))
+        .catch((e) => console.error(e));
+    })
     .catch((e) => console.error(e));
 });
 
