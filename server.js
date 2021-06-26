@@ -11,10 +11,27 @@ const pool = new Pool({
     port: 5432
 });
 
-app.get("/hotels", function(req, res) {
-  pool.query('SELECT * FROM hotels', (error, result) => {
-    res.json(result.rows);
-  });
+app.get("/hotels", function (req, res) {
+  const hotelNameQuery = req.query.name;
+  let query = `SELECT * FROM hotels ORDER BY name`;
+  console.log(req.query)
+  if (hotelNameQuery) {
+    query = `SELECT * FROM hotels WHERE name LIKE '%${hotelNameQuery}%' ORDER BY name`;
+  }
+
+  pool
+    .query(query)
+    .then((result) => res.json(result.rows))
+    .catch((e) => console.error(e));
+});
+
+app.get("/hotels/:hotelId", function (req, res) {
+  const hotelId = req.params.hotelId;
+
+  pool
+    .query("SELECT * FROM hotels WHERE id=$1", [hotelId])
+    .then((result) => res.json(result.rows))
+    .catch((e) => console.error(e));
 });
 
 app.listen(3001, function() {
