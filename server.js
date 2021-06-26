@@ -47,6 +47,16 @@ app.post("/hotels", function (req, res) {
     .catch((e) => console.error(e));
 });
 
+app.put("/customers/:customerId", function (req, res) {
+  const customerId = req.params.customerId;
+  const newEmail = req.body.email;
+
+  pool
+    .query("UPDATE customers SET email=$1 WHERE id=$2", [newEmail, customerId])
+    .then(() => res.send(`Customer ${customerId} updated!`))
+    .catch((e) => console.error(e));
+});
+
 app.listen(3001, function() {
   console.log("server is listening on 3001");
 });
